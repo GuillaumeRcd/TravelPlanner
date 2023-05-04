@@ -1,42 +1,32 @@
 import { Link, useNavigate } from "react-router-dom";
 import { parseISO } from "date-fns";
-import { useState, React, useEffect } from "react";
-import PropTypes from "prop-types";
+import { useState, useEffect, SetStateAction, Dispatch } from "react";
 
 import { getSearchedTrips, getActivitiesList } from "../../api.service";
+import { diffMinutes, putCapLet } from "../../utils/utils";
 import "./Explore.css";
+import { Activity, Trip } from "../../types/types";
 
-function Explore({ setsearchedTrips }) {
-  const [activities, setActivities] = useState(null);
-  const [selectedActivities, setSelectedActivities] = useState([]);
+function Explore({ setsearchedTrips } : {setsearchedTrips: Dispatch<SetStateAction<Trip[]>>}) {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [selectedActivities, setSelectedActivities] = useState<string[]>([]);
   const [newActivity, setNewActivity] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  Explore.propTypes = {
-    setsearchedTrips: PropTypes.func.isRequired,
-  };
-
   const navigate = useNavigate();
 
-  const putCapLet = function (string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  function lowerCase(string) {
-    return string.toLowerCase();
-  }
-
-  const handleActivitySelect = (e) => {
+  const handleActivitySelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedActivity = e.target.value;
     setSelectedActivities([...selectedActivities, selectedActivity]);
   };
 
   const fetchActivities = async () => {
     const activitiesList = await getActivitiesList();
-    const activities = Array.from(
-      new Set(activitiesList.map((obj) => obj.activityType))
+    if (!activitiesList) return
+    const activities: Activity[] = Array.from(
+      new Set(activitiesList.map((obj: Activity) => obj.activityType))
     );
     setActivities(activities);
   };
@@ -53,61 +43,52 @@ function Explore({ setsearchedTrips }) {
     }
   }, [startDate, endDate]);
 
-  const handleStartDateChange = (event) => {
-    setStartDate(event.target.value);
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStartDate(e.currentTarget.value);
   };
 
-  const handleEndDateChange = (event) => {
-    setEndDate(event.target.value);
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEndDate(e.currentTarget.value);
   };
 
-  const handleSubmit = async function (e) {
+  const handleSubmit = async function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const start = parseISO(e.target[0].value);
-    const end = parseISO(e.target[1].value);
-    const budget = parseFloat(e.target[3].value);
+    const start = parseISO((e.currentTarget[0] as HTMLInputElement).value);
+    const end = parseISO((e.currentTarget[1] as HTMLInputElement).value);
+    const budget = parseFloat((e.currentTarget[3] as HTMLInputElement).value);
 
     const newTrip = {
       start: start,
       end: end,
-      depCity: putCapLet(lowerCase(e.target[2].value)),
+      depCity: putCapLet((e.currentTarget[2] as HTMLInputElement) .value.toLowerCase()),
       budget: budget,
       activities: [
         ...selectedActivities,
-        ...e.target[4].value.split(",").map(lowerCase).map(putCapLet),
+        ...(e.currentTarget[4] as HTMLInputElement).value.split(",").map((str) => putCapLet(str.toLowerCase()))
       ],
     };
 
-    function diffMinutes(date1, date2) {
-      if (date2 > date1) {
-        const diff = Math.abs(date2 - date1);
-        return Math.floor(diff / (1000 * 60));
-      }
-      const diff = Math.abs(date1 - date2);
-      return Math.floor(diff / (1000 * 60));
-    }
-
     const duration = diffMinutes(newTrip.end, newTrip.start);
-    console.log(duration);
 
     const constructSearchUrl = function () {
       const arrRes = ["http://localhost:3001/result/?"];
-      newTrip.activities.forEach((activity, index) => {
+      newTrip.activities.forEach((activity: string | Activity, index) => {
         if (index === 0) {
           arrRes.push("activities=");
         } else {
           arrRes.push("&activities=");
         }
-        arrRes.push(activity);
+        if (typeof activity === 'string') {
+          arrRes.push(activity);
+        }
       });
       arrRes.push("&budget=");
-      arrRes.push(newTrip.budget);
+      arrRes.push(newTrip.budget.toString());
       arrRes.push("&depCity=");
       arrRes.push(newTrip.depCity);
       arrRes.push("&duration=");
-      arrRes.push(duration);
-
+      arrRes.push(duration.toString());
       return arrRes.join("");
     };
 
@@ -115,7 +96,6 @@ function Explore({ setsearchedTrips }) {
 
     const resultOfSearch = await getSearchedTrips(url);
     setsearchedTrips(resultOfSearch);
-    e.target.reset();
     navigate("/result");
   };
 
@@ -128,7 +108,7 @@ function Explore({ setsearchedTrips }) {
         </Link>
       </div>
       <div className="Explore">
-        <form onSubmit={handleSubmit}>
+        <form role='searchForm' onSubmit={handleSubmit}>
           <div className="form-section">
             <div className="input-group">
               <label htmlFor="startDate">Start of the Trip</label>
@@ -212,8 +192,8 @@ function Explore({ setsearchedTrips }) {
                 <option value="">Select activities</option>
                 {activities &&
                   activities.map((activity, index) => (
-                    <option key={index} value={activity}>
-                      {activity}
+                    <option key={index} value={activity.toString()}>
+                      {activity.toString()}
                     </option>
                   ))}
               </select>
@@ -223,7 +203,7 @@ function Explore({ setsearchedTrips }) {
               {selectedActivities.map((activity, index) => (
                 <li key={index}>
                   {"#"}
-                  {putCapLet(lowerCase(activity))}{" "}
+                  {putCapLet(activity.toLowerCase())}{" "}
                   <button
                     type="button"
                     className="buttonRemove"
@@ -240,7 +220,7 @@ function Explore({ setsearchedTrips }) {
             </ul>
 
             <div className="contain-button">
-              <button className="button" disabled={errorMessage}>
+              <button className="button" disabled={errorMessage !== '' ? true : false}>
                 Search
               </button>
             </div>

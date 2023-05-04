@@ -1,9 +1,10 @@
 import { useNavigate, Link } from "react-router-dom";
 import { parseISO } from "date-fns";
-import { useContext, React } from "react";
+import { useContext } from "react";
 
 import { postJourney } from "../../api.service";
 import { TripContext } from "../../App";
+import { putCapLet } from "../../utils/utils";
 
 import "./Journey.css";
 
@@ -12,40 +13,28 @@ function Journey() {
 
   const navigate = useNavigate();
 
-  const putCapLet = function (string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  function lowerCase(string) {
-    return string.toLowerCase();
-  }
-
   function handleCancelJourney() {
     navigate(`/trip/${currentTrip.id}`);
   }
 
-  const handleSubmit = async function (e) {
+  const handleSubmit = async function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const start = parseISO(e.target[0].value);
-    const end = parseISO(e.target[1].value);
-    const price = parseFloat(e.target[4].value);
+    const start = parseISO((e.currentTarget[0] as HTMLInputElement).value);
+    const end = parseISO((e.currentTarget[1] as HTMLInputElement).value);
+    const price = parseFloat((e.currentTarget[4] as HTMLInputElement).value);
 
     const newJourney = {
       start: start,
       end: end,
-      depCity: putCapLet(lowerCase(e.target[2].value)),
-      arrCity: putCapLet(lowerCase(e.target[3].value)),
+      depCity: putCapLet((e.currentTarget[2] as HTMLInputElement).value.toLowerCase()),
+      arrCity: putCapLet((e.currentTarget[3] as HTMLInputElement).value.toLowerCase()),
       price: price,
-      transportType: putCapLet(lowerCase(e.target[5].value)),
-      idTrip: currentTrip.id,
+      transportType: putCapLet((e.currentTarget[5] as HTMLInputElement).value.toLowerCase()),
+      idTrip: currentTrip.id!,
     };
 
-    console.log("newjourney", newJourney);
-
-    const journeyNew = await postJourney(newJourney);
-
-    e.target.reset();
+    await postJourney(newJourney);
 
     navigate(`/trip/${currentTrip.id}`);
   };
@@ -56,7 +45,7 @@ function Journey() {
 
       <div className="butt-section">
         <Link to="/">
-          <button className="button">Home</button>
+          <button data-testid="homeButt" className="button">Home</button>
         </Link>
       </div>
       <div className="Journey">
@@ -66,32 +55,32 @@ function Journey() {
 
             <div className="input-group">
               <label htmlFor="startDate">Start of the journey</label>
-              <input className="inputs" type="datetime-local" required></input>
+              <input data-testid="journeyStart" className="inputs" type="datetime-local" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="endDate">End of the journey</label>
-              <input className="inputs" type="datetime-local" required></input>
+              <input data-testid="journeyEnd" className="inputs" type="datetime-local" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="departureCity">Departure City</label>
-              <input className="inputs" placeholder="City" required></input>
+              <input data-testid="depCity" className="inputs" placeholder="City" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="arrivalCity">Arrival City</label>
-              <input className="inputs" placeholder="City" required></input>
+              <input data-testid="arrCity" className="inputs" placeholder="City" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="Price">Price</label>
-              <input className="inputs" placeholder="Price" required></input>
+              <input data-testid="price" className="inputs" placeholder="Price" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="TransportType">Transport Type</label>
-              <input className="inputs" placeholder="Transport used" required></input>
+              <input data-testid="transportType" className="inputs" placeholder="Transport used" required></input>
             </div>
 
             <div className="contain-buttons">
@@ -103,7 +92,7 @@ function Journey() {
 
               <div className="journey-button">
                 <button className="button" onClick={handleCancelJourney}>
-                  Cancel journey
+                  Cancel Journey
                 </button>
               </div>
             </div>

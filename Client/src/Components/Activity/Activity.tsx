@@ -1,9 +1,10 @@
 import { useNavigate, Link } from "react-router-dom";
 import { parseISO } from "date-fns";
-import { useContext, React } from "react";
+import { useContext } from "react";
 
 import { postActivity } from "../../api.service";
 import { TripContext } from "../../App";
+import { putCapLet } from "../../utils/utils";
 import "./Activity.css";
 
 function Activity() {
@@ -11,39 +12,29 @@ function Activity() {
 
   const navigate = useNavigate();
 
-  const putCapLet = function (string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  function lowerCase(string) {
-    return string.toLowerCase();
-  }
-
   function handleCancelActivity() {
     navigate(`/trip/${currentTrip.id}`);
   }
 
-  const handleSubmit = async function (e) {
+  const handleSubmit = async function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const start = parseISO(e.target[0].value);
-    const end = parseISO(e.target[1].value);
-    const price = parseFloat(e.target[4].value);
+    const start = parseISO((e.currentTarget[0] as HTMLInputElement).value);
+    const end = parseISO((e.currentTarget[1] as HTMLInputElement).value);
+    const price = parseFloat((e.currentTarget[4] as HTMLInputElement).value);
 
     const newActivity = {
       start: start,
       end: end,
-      depCity: putCapLet(lowerCase(e.target[2].value)),
-      arrCity: putCapLet(lowerCase(e.target[3].value)),
+      depCity: putCapLet((e.currentTarget[2] as HTMLInputElement).value.toLowerCase()),
+      arrCity: putCapLet((e.currentTarget[3] as HTMLInputElement).value.toLowerCase()),
       price: price,
-      activityType: putCapLet(lowerCase(e.target[5].value)),
-      additionalInfo: putCapLet(lowerCase(e.target[6].value)),
-      idTrip: currentTrip.id,
+      activityType: putCapLet((e.currentTarget[5] as HTMLInputElement).value.toLowerCase()),
+      additionalInfo: putCapLet((e.currentTarget[6] as HTMLInputElement).value.toLowerCase()),
+      idTrip: currentTrip.id!,
     };
 
-    const activityNew = await postActivity(newActivity);
-
-    e.target.reset();
+    await postActivity(newActivity);
 
     navigate(`/trip/${currentTrip.id}`);
   };
@@ -54,7 +45,7 @@ function Activity() {
 
       <div className="butt-section">
         <Link to="/">
-          <button className="button">Home</button>
+          <button data-testid="homeButt" className="button">Home</button>
         </Link>
       </div>
       <div className="Activity">
@@ -64,32 +55,33 @@ function Activity() {
 
             <div className="input-group">
               <label htmlFor="startDate">Start of the activity</label>
-              <input className="inputs" type="datetime-local" required></input>
+              <input data-testid="activityStart" className="inputs" type="datetime-local" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="endDate">End of the activity</label>
-              <input className="inputs" type="datetime-local" required></input>
+              <input data-testid="activityEnd" className="inputs" type="datetime-local" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="departureCity">Departure City</label>
-              <input className="inputs" placeholder="City" required></input>
+              <input data-testid="depCity" className="inputs" placeholder="City" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="arrivalCity">Arrival City</label>
-              <input className="inputs" placeholder="City"></input>
+              <input data-testid="arrCity" className="inputs" placeholder="City"></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="Price">Price</label>
-              <input className="inputs" placeholder="Price" required></input>
+              <input data-testid="price" className="inputs" placeholder="Price" required></input>
             </div>
 
             <div className="input-group">
               <label htmlFor="ActivityName">Activity Name</label>
               <input
+                data-testid="whatDidYouDo" 
                 className="inputs"
                 placeholder="What did you do?"
                 required
@@ -98,7 +90,7 @@ function Activity() {
 
             <div className="input-group">
               <label htmlFor="AdditionalInfo">Additional Info?</label>
-              <input className="inputs" placeholder="..."></input>
+              <input data-testid="additionalInfo" className="inputs" placeholder="..."></input>
             </div>
 
             <div className="contain-buttons">
@@ -110,7 +102,7 @@ function Activity() {
 
               <div className="activity-button">
                 <button className="button" onClick={handleCancelActivity}>
-                  Cancel activity
+                  Cancel Activity
                 </button>
               </div>
             </div>

@@ -1,50 +1,38 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useContext, React } from "react";
+import { useContext } from "react";
 
 import { TripContext } from "../../App";
 import { postTrip } from "../../api.service";
+import { putCapLet } from "../../utils/utils";
 
 import "./Post.css";
 
 function Post() {
-  const { currentTrip, setcurrentTrip } = useContext(TripContext);
-  // const [error, setError] = useState('');
+  const { setcurrentTrip } = useContext(TripContext);
 
   const navigate = useNavigate();
 
-  const putCapLet = function (string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
-
-  function lowerCase(string) {
-    return string.toLowerCase();
-  }
-
-  const handleSubmit = async function (e) {
+  const handleSubmit = async function (e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    const budget = parseFloat(e.target[4].value);
-    const duration = parseInt(e.target[5].value);
+    const budget = parseFloat((e.currentTarget[4] as HTMLInputElement).value);
+    const duration = parseInt((e.currentTarget[5] as HTMLInputElement).value);
 
     const newTrip = {
-      name: putCapLet(lowerCase(e.target[0].value)),
-      user: putCapLet(lowerCase(e.target[1].value)),
-      depCity: putCapLet(lowerCase(e.target[2].value)),
-      arrCity: putCapLet(lowerCase(e.target[3].value)),
+      name: putCapLet((e.currentTarget[0] as HTMLInputElement).value.toLowerCase()),
+      user: putCapLet((e.currentTarget[1] as HTMLInputElement).value.toLowerCase()),
+      depCity: putCapLet((e.currentTarget[2] as HTMLInputElement).value.toLowerCase()),
+      arrCity: putCapLet((e.currentTarget[3] as HTMLInputElement).value.toLowerCase()),
       budget: budget,
       duration: duration,
     };
 
-    console.log(newTrip);
-    // Send to back-End
-    const currentTrip = await postTrip(newTrip);
+    const response = await postTrip(newTrip);
 
-    if (currentTrip.id) {
-      setcurrentTrip(currentTrip);
-      navigate(`/trip/${currentTrip.id}`);
+    if (response!.data.id) {
+      setcurrentTrip(response!.data);
+      navigate(`/trip/${response!.data.id}`);
     }
-
-    e.target.reset();
   };
 
   return (
@@ -61,6 +49,7 @@ function Post() {
               <div className="input-group">
                 <label htmlFor="name">Name of your trip</label>
                 <input
+                  data-testid="tripNameInput"
                   className="inputs"
                   placeholder="Give a name to your trip"
                 />
@@ -68,26 +57,26 @@ function Post() {
 
               <div className="input-group">
                 <label htmlFor="user">User</label>
-                <input className="inputs" placeholder="User" />
+                <input data-testid="userInput" className="inputs" placeholder="User" />
               </div>
 
               <div className="input-group">
                 <label htmlFor="depCity">Departure City</label>
-                <input className="inputs" placeholder="City" />
+                <input data-testid="depCityInput" className="inputs" placeholder="City" />
               </div>
 
               <div className="input-group">
                 <label htmlFor="arrCity">Arrival City</label>
-                <input className="inputs" placeholder="City" />
+                <input data-testid="arrCityInput" className="inputs" placeholder="City" />
               </div>
 
               <div className="input-group">
                 <label htmlFor="budget">Budget</label>
-                <input className="inputs" placeholder="Budget" />
+                <input data-testid="budgetInput" className="inputs" placeholder="Budget" />
               </div>
               <div className="contain-button">
                 <button className="button" type="submit">
-                  Create
+                  Create Trip
                 </button>
               </div>
             </div>
