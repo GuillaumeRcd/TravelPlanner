@@ -1,14 +1,14 @@
 import { createContext,useState, React } from 'react'
 import { BrowserRouter, Routes, Route , useParams} from 'react-router-dom';
 
-import Home from './Components/Home/Home'
-import Post from './Components/Post/Post'
-import Explore from './Components/Explore/Explore'
-import Activity from './Components/Activity/Activity'
-import Journey from './Components/Journey/Journey'
-import Result from './Components/Result/Result'
-import Trip from './Components/Trip/Trip'
-import Modify from './Components/Modifiy/Modify';
+import Home from './Pages/Home/Home'
+import Post from './Pages/Post/Post'
+import Explore from './Pages/Explore/Explore'
+import Activity from './Pages/Activity/Activity'
+import Journey from './Pages/Journey/Journey'
+import Result from './Pages/Result/Result'
+import Trip from './Pages/Trip/Trip'
+import Modify from './Pages/Modifiy/Modify';
 
 import './App.css'
 
